@@ -1,5 +1,6 @@
 from tkinter import ttk
 from tkinter import *
+from tkinter.messagebox import askyesno
 
 import sqlite3
 
@@ -41,11 +42,23 @@ class Product:
         self.tree.heading('#1', text = 'Price', anchor = CENTER)
 
         # Buttons
-        ttk.Button(text = 'DELETE', command = self.delete_product).grid(row = 5, column = 0, sticky = W + E)
+        ttk.Button(text = 'DELETE', command = self.delete_confirm_dialog).grid(row = 5, column = 0, sticky = W + E)
         ttk.Button(text = 'EDIT', command = self.edit_product).grid(row = 5, column = 1, sticky = W + E)
 
         # Filling the Rows
         self.get_products()
+
+    def delete_confirm_dialog(self):
+        try:
+            self.tree.item(self.tree.selection())['text'][0]
+        except IndexError as e:
+            self.message['text'] = 'Please select a Record'
+            return
+        name = self.tree.item(self.tree.selection())['text']
+        answer = askyesno(title='confirmation',
+                    message='Are you sure to delete ' + name + '?')
+        if answer:
+            self.delete_product()
 
     # Function to Execute Database Querys
     def run_query(self, query, parameters = ()):
@@ -62,7 +75,7 @@ class Product:
         for element in records:
             self.tree.delete(element)
         # getting data
-        query = 'SELECT * FROM product ORDER BY name DESC'
+        query = 'SELECT * FROM product ORDER BY name ASC'
         db_rows = self.run_query(query)
         # filling data
         for row in db_rows:
